@@ -5,12 +5,14 @@ public class Quake
     private double magnitude;
     private String city;
     private String date;
+    private String url;
 
-    public Quake(double magnitude, String city, String date)
+    public Quake(double magnitude, String city, String date, String url)
     {
         this.magnitude = magnitude;
         this.city = city;
         this.date = date;
+        this.url = url;
     }
 
     public double getMagnitude()
@@ -26,5 +28,10 @@ public class Quake
     public String getDate()
     {
         return date;
+    }
+
+    public String getUrl()
+    {
+        return url;
     }
 }

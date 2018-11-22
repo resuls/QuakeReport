@@ -6,9 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 public final class QueryUtils
 {
@@ -42,7 +40,7 @@ public final class QueryUtils
                 JSONObject a = jsonArray.getJSONObject(i).getJSONObject("properties");
 
                 earthquakes.add(new Quake(a.getDouble("mag"), a.getString("place"),
-                        a.getString("time")));
+                        a.getString("time"), a.getString("url")));
             }
         }
         catch (JSONException e)
