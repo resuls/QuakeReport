@@ -10,8 +10,10 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -76,6 +78,24 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
             txtEmpty.setText(getResources().getText(R.string.no_internet));
         }
+
+        final SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swiperefresh);
+        /*
+         * Sets up a SwipeRefreshLayout.OnRefreshListener that is invoked when the user
+         * performs a swipe-to-refresh gesture.
+         */
+        swipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener()
+                {
+                    @Override
+                    public void onRefresh()
+                    {
+                        destroyLoader();
+                        updateUi();
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                }
+        );
     }
 
     public void updateUi()
@@ -154,9 +174,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onResume()
     {
         super.onResume();
+
+        destroyLoader();
+        updateUi();
+    }
+
+    private void destroyLoader()
+    {
         LoaderManager loaderManager = getLoaderManager();
         loaderManager.destroyLoader(0);
-
-        updateUi();
     }
 }
