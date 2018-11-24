@@ -1,28 +1,31 @@
 package com.example.android.quakereport;
 
+import android.app.LoaderManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.Loader;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Quake>>
 {
     public static final String LOG_TAG = MainActivity.class.getName();
     private final String URL = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
 
-    private ArrayList<Quake> earthquakes;
-    private ListView earthquakeListView;
     private ListAdapter adapter;
+    private TextView txtEmpty;
+    private View progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -30,55 +33,75 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Find a reference to the {@link ListView} in the layout
-        earthquakeListView = findViewById(R.id.list);
+        ListView earthquakeListView = findViewById(R.id.list);
+        txtEmpty = findViewById(R.id.txtEmpty);
+        progressBar = findViewById(R.id.progressBar);
 
-        new getAsyncData().execute(URL);
+        earthquakeListView.setEmptyView(txtEmpty);
+
+        adapter = new ListAdapter(this, new ArrayList<Quake>());
+
+        earthquakeListView.setAdapter(adapter);
 
         earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id)
             {
-                Quake quake = earthquakes.get(position);
+                Quake quake = adapter.getItem(position);
 
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse(quake.getUrl()));
                 startActivity(intent);
             }
         });
+
+        ConnectivityManager cm =
+                (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        if (activeNetwork != null && activeNetwork.isConnected())
+        {
+            LoaderManager loaderManager = getLoaderManager();
+
+            loaderManager.initLoader(0, null, this);
+        }
+        else
+        {
+            progressBar.setVisibility(View.GONE);
+
+            txtEmpty.setText(getResources().getText(R.string.no_internet));
+        }
     }
 
-    public void updateUi(ArrayList<Quake> quakes)
+    @Override
+    public Loader<List<Quake>> onCreateLoader(int id, Bundle args)
     {
-        // Create a new {@link ArrayAdapter} of earthquakes
-        adapter = new ListAdapter(this, quakes);
-
-        // Set the adapter on the {@link ListView}
-        // so the list can be populated in the user interface
-        earthquakeListView.setAdapter(adapter);
+        Log.e(LOG_TAG, "onCreateLoader executed");
+        return new QuakeLoader(this, URL);
     }
 
-    private class getAsyncData extends AsyncTask<String, Void, List<Quake>>
+    @Override
+    public void onLoadFinished(Loader<List<Quake>> loader, List<Quake> data)
     {
-        @Override
-        protected List<Quake> doInBackground(String... strings)
+        progressBar.setVisibility(View.GONE);
+
+        txtEmpty.setText(getResources().getText(R.string.empty_view));
+
+        adapter.clear();
+
+
+
+        if (data != null && !data.isEmpty())
         {
-            if (strings.length < 1 || strings[0] == null)
-                return null;
-            // Create a fake list of earthquake locations.
-            earthquakes = QueryUtils.fetchQuakeData(strings[0]);
-
-            return earthquakes;
+            adapter.addAll(data);
         }
+    }
 
-        @Override
-        protected void onPostExecute(List<Quake> quakes)
-        {
-            if (quakes == null)
-                return;
-
-            updateUi((ArrayList<Quake>) quakes);
-        }
+    @Override
+    public void onLoaderReset(Loader<List<Quake>> loader)
+    {
+        adapter.clear();
     }
 }

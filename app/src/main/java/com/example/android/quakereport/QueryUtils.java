@@ -26,6 +26,7 @@ public final class QueryUtils
     {
         // Create URL object
         URL url = createUrl(urlString);
+        Log.e(MainActivity.LOG_TAG, "fetchQuakeData executed");
 
         // Perform HTTP request to the URL and receive a JSON response back
         String jsonResponse = null;
@@ -37,6 +38,13 @@ public final class QueryUtils
         {
             Log.e(MainActivity.LOG_TAG, "Error closing input stream", e);
         }
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
 
         ArrayList<Quake> earthquakes = extractEarthquakes(jsonResponse);
         return earthquakes;
