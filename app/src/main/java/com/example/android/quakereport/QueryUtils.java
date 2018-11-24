@@ -39,11 +39,11 @@ public final class QueryUtils
             Log.e(MainActivity.LOG_TAG, "Error closing input stream", e);
         }
 
-        try {
+        /*try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
 
 
         ArrayList<Quake> earthquakes = extractEarthquakes(jsonResponse);

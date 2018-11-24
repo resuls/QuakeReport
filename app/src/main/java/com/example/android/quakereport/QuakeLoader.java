@@ -18,7 +18,6 @@ public class QuakeLoader extends AsyncTaskLoader<List<Quake>>
     {
         super(context);
         this.url = url;
-        Log.e(MainActivity.LOG_TAG, "QuakeLoader constructor executed");
     }
 
     @Override
